@@ -17,10 +17,9 @@
       --midnight-deep: #070f1c;
       --gold: #C9A962;
       --ivory: #F8F6F1;
-      --border: rgba(201, 169, 98, 0.07);
-      --text-primary: #C8C4BC;
-      --text-secondary: #566378;
-      --text-muted: #2E3A4C;
+      --text-primary: #E2DFD8;
+      --text-body: #B0ADAA;
+      --text-label: #8A8784;
     }
 
     html { scroll-behavior: smooth; }
@@ -43,7 +42,7 @@
       justify-content: space-between;
       align-items: center;
       backdrop-filter: blur(30px);
-      background: rgba(7, 15, 28, 0.75);
+      background: rgba(7, 15, 28, 0.8);
     }
 
     .nav-logo {
@@ -53,11 +52,11 @@
       text-decoration: none;
     }
 
-    .nav-logo img { width: 24px; height: 24px; opacity: 0.8; }
+    .nav-logo img { width: 26px; height: 26px; opacity: 0.85; }
 
     .nav-logo span {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 0.95rem;
+      font-size: 1.1rem;
       font-weight: 500;
       color: var(--text-primary);
       letter-spacing: 0.06em;
@@ -76,156 +75,218 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1.8rem;
+      gap: 2rem;
     }
 
     .hero-icon {
-      width: 56px;
-      height: 56px;
-      opacity: 0.6;
+      width: 72px;
+      height: 72px;
+      opacity: 0.7;
     }
 
     .hero-name {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-size: clamp(2.4rem, 4.5vw, 3.6rem);
       font-weight: 400;
       letter-spacing: 0.12em;
       color: var(--ivory);
     }
 
     .hero-slogan {
-      font-size: 0.7rem;
+      font-size: 0.9rem;
       font-weight: 400;
-      color: var(--text-muted);
-      letter-spacing: 0.25em;
+      color: var(--text-label);
+      letter-spacing: 0.3em;
       text-transform: uppercase;
     }
 
-    .hero-line {
-      width: 1px;
-      height: 40px;
-      background: linear-gradient(180deg, rgba(201,169,98,0.15), transparent);
+    /* ── Scroll indicator ── */
+    .scroll-hint {
       position: absolute;
-      bottom: 3rem;
+      bottom: 2.5rem;
       left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      opacity: 0;
+      animation: fadeInHint 1s ease 1.5s forwards;
+    }
+
+    .scroll-hint span {
+      font-size: 0.65rem;
+      color: var(--text-label);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.5;
+    }
+
+    .scroll-dot {
+      width: 1px;
+      height: 28px;
+      position: relative;
+      overflow: hidden;
+      background: rgba(201,169,98,0.08);
+    }
+
+    .scroll-dot::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--gold);
+      opacity: 0.3;
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollPulse {
+      0% { top: -100%; }
+      100% { top: 100%; }
+    }
+
+    @keyframes fadeInHint {
+      to { opacity: 1; }
     }
 
     /* ── Sections ── */
-    section { padding: 6rem 3rem; }
+    .section-spacer {
+      height: 10vh;
+    }
 
     /* ── Divisions ── */
     .divisions {
-      border-top: 1px solid var(--border);
-      max-width: 960px;
+      max-width: 1000px;
       margin: 0 auto;
-      padding: 6rem 0;
+      padding: 4rem 3rem 8rem;
     }
 
     .division-row {
       display: grid;
-      grid-template-columns: 160px 1fr;
-      gap: 3rem;
-      padding: 3rem 0;
-      border-bottom: 1px solid var(--border);
-      align-items: baseline;
+      grid-template-columns: 180px 1fr;
+      gap: 4rem;
+      padding: 5rem 0;
+      align-items: start;
     }
-
-    .division-row:first-child { padding-top: 0; }
-    .division-row:last-child { border-bottom: none; }
 
     .division-name {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 1.15rem;
+      font-size: 1.5rem;
       font-weight: 500;
       color: var(--ivory);
       letter-spacing: 0.03em;
     }
 
     .division-type {
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      letter-spacing: 0.12em;
+      font-size: 0.8rem;
+      color: var(--text-label);
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      margin-top: 0.4rem;
+      margin-top: 0.5rem;
     }
 
     .division-body {
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      line-height: 1.8;
+      color: var(--text-body);
+      font-size: 1.05rem;
+      line-height: 1.85;
       font-weight: 300;
     }
 
     .division-tags {
-      margin-top: 1.2rem;
+      margin-top: 1.5rem;
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem;
+      gap: 1rem;
     }
 
     .division-tag {
-      font-size: 0.62rem;
-      color: var(--text-muted);
-      letter-spacing: 0.06em;
+      font-size: 0.78rem;
+      color: var(--text-label);
+      letter-spacing: 0.05em;
     }
 
     .division-tag::before {
       content: '';
       display: inline-block;
-      width: 3px;
-      height: 3px;
+      width: 4px;
+      height: 4px;
       background: var(--gold);
       border-radius: 50%;
-      margin-right: 0.5rem;
+      margin-right: 0.6rem;
       vertical-align: middle;
-      opacity: 0.3;
+      opacity: 0.35;
     }
 
     /* ── Footer ── */
     footer {
       padding: 2.5rem 3rem;
-      border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .footer-left {
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      letter-spacing: 0.04em;
-    }
-
-    .footer-right {
-      font-size: 0.65rem;
+      font-size: 0.78rem;
+      color: var(--text-label);
     }
 
     .footer-right a {
-      color: var(--text-muted);
+      font-size: 0.78rem;
+      color: var(--text-label);
       text-decoration: none;
       transition: color 0.3s;
     }
 
-    .footer-right a:hover { color: var(--text-secondary); }
+    .footer-right a:hover { color: var(--text-body); }
 
-    /* ── Animations ── */
+    /* ── Scroll Reveal Animations ── */
     .reveal {
       opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      transform: translateY(24px);
+      transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-    .reveal-d1 { transition-delay: 0.1s; }
-    .reveal-d2 { transition-delay: 0.2s; }
-    .reveal-d3 { transition-delay: 0.3s; }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-d1 { transition-delay: 0.12s; }
+    .reveal-d2 { transition-delay: 0.24s; }
+    .reveal-d3 { transition-delay: 0.36s; }
+
+    /* Staggered word reveal for hero */
+    .word-reveal {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: wordIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    @keyframes wordIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Fade-out on scroll away */
+    .fade-section {
+      transition: opacity 0.5s ease;
+    }
+
+    .fade-section.dimmed {
+      opacity: 0.15;
+    }
 
     /* ── Responsive ── */
     @media (max-width: 768px) {
       nav { padding: 1.2rem 1.5rem; }
-      .divisions { padding: 4rem 1.5rem; }
+      .divisions { padding: 3rem 1.5rem 6rem; }
       .division-row {
         grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: 1.2rem;
+        padding: 3.5rem 0;
       }
       footer {
         flex-direction: column;
@@ -244,14 +305,19 @@
     </a>
   </nav>
 
-  <section class="hero">
+  <section class="hero fade-section" id="hero">
     <div class="hero-center">
-      <img src="logo-gold-transparent.png" alt="" class="hero-icon reveal">
-      <h1 class="hero-name reveal reveal-d1">MOIRAI RESEARCH</h1>
-      <div class="hero-slogan reveal reveal-d2">Prediction Market HFT</div>
+      <img src="logo-gold-transparent.png" alt="" class="hero-icon">
+      <h1 class="hero-name" id="heroName"></h1>
+      <div class="hero-slogan" id="heroSlogan"></div>
     </div>
-    <div class="hero-line"></div>
+    <div class="scroll-hint">
+      <span>Scroll</span>
+      <div class="scroll-dot"></div>
+    </div>
   </section>
+
+  <div class="section-spacer"></div>
 
   <div class="divisions">
 
@@ -273,7 +339,7 @@
       </div>
     </div>
 
-    <div class="division-row reveal reveal-d1">
+    <div class="division-row reveal">
       <div>
         <div class="division-name">Research</div>
         <div class="division-type">Quantitative Research</div>
@@ -290,7 +356,7 @@
       </div>
     </div>
 
-    <div class="division-row reveal reveal-d2">
+    <div class="division-row reveal">
       <div>
         <div class="division-name">Advisory</div>
         <div class="division-type">By Invitation</div>
@@ -315,10 +381,37 @@
   </footer>
 
   <script>
-    const o = new IntersectionObserver(e => {
-      e.forEach(x => { if (x.isIntersecting) x.target.classList.add('visible'); });
-    }, { threshold: 0.15 });
-    document.querySelectorAll('.reveal').forEach(el => o.observe(el));
+    // ── Staggered word reveal on hero ──
+    function animateWords(el, text, baseDelay) {
+      const words = text.split(' ');
+      el.innerHTML = words.map((w, i) =>
+        `<span class="word-reveal" style="animation-delay:${baseDelay + i * 0.12}s">${w}</span>`
+      ).join(' ');
+    }
+
+    animateWords(document.getElementById('heroName'), 'MOIRAI RESEARCH', 0.3);
+    animateWords(document.getElementById('heroSlogan'), 'Prediction Market HFT', 0.8);
+
+    // ── Hero fades out as you scroll past ──
+    const hero = document.getElementById('hero');
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      const heroH = hero.offsetHeight;
+      const ratio = Math.min(scrollY / (heroH * 0.6), 1);
+      hero.style.opacity = 1 - ratio * 0.85;
+      hero.style.transform = `translateY(${ratio * -30}px)`;
+    }, { passive: true });
+
+    // ── Division rows fade in on scroll ──
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.2, rootMargin: '0px 0px -60px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
   </script>
 
 </body>
