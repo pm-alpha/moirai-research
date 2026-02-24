@@ -13,13 +13,12 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --midnight: #0A1628;
       --midnight-deep: #070f1c;
       --gold: #C9A962;
       --ivory: #F8F6F1;
-      --text-primary: #E2DFD8;
-      --text-body: #B0ADAA;
-      --text-label: #8A8784;
+      --text-primary: #E8E5DE;
+      --text-body: #BEB9B4;
+      --text-label: #918D89;
     }
 
     html { scroll-behavior: smooth; }
@@ -48,15 +47,15 @@
     .nav-logo {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       text-decoration: none;
     }
 
-    .nav-logo img { width: 26px; height: 26px; opacity: 0.85; }
+    .nav-logo img { width: 28px; height: 28px; opacity: 0.85; }
 
     .nav-logo span {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 500;
       color: var(--text-primary);
       letter-spacing: 0.06em;
@@ -69,6 +68,7 @@
       align-items: center;
       justify-content: center;
       position: relative;
+      z-index: 2;
     }
 
     .hero-center {
@@ -79,108 +79,69 @@
     }
 
     .hero-icon {
-      width: 72px;
-      height: 72px;
-      opacity: 0.7;
+      width: 80px;
+      height: 80px;
+      opacity: 0.75;
     }
 
     .hero-name {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+      font-size: clamp(2.8rem, 5vw, 4.2rem);
       font-weight: 400;
       letter-spacing: 0.12em;
       color: var(--ivory);
     }
 
     .hero-slogan {
-      font-size: 0.9rem;
+      font-size: 1rem;
       font-weight: 400;
       color: var(--text-label);
       letter-spacing: 0.3em;
       text-transform: uppercase;
     }
 
-    /* ── Scroll indicator ── */
-    .scroll-hint {
-      position: absolute;
-      bottom: 2.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.6rem;
-      opacity: 0;
-      animation: fadeInHint 1s ease 1.5s forwards;
-    }
-
-    .scroll-hint span {
-      font-size: 0.65rem;
-      color: var(--text-label);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      opacity: 0.5;
-    }
-
-    .scroll-dot {
-      width: 1px;
-      height: 28px;
+    /* ── Network Canvas — fills the gap between hero and divisions ── */
+    .network-section {
       position: relative;
+      height: 70vh;
       overflow: hidden;
-      background: rgba(201,169,98,0.08);
     }
 
-    .scroll-dot::after {
-      content: '';
+    #networkCanvas {
       position: absolute;
-      top: -100%;
+      top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: var(--gold);
-      opacity: 0.3;
-      animation: scrollPulse 2s ease-in-out infinite;
-    }
-
-    @keyframes scrollPulse {
-      0% { top: -100%; }
-      100% { top: 100%; }
-    }
-
-    @keyframes fadeInHint {
-      to { opacity: 1; }
-    }
-
-    /* ── Sections ── */
-    .section-spacer {
-      height: 10vh;
     }
 
     /* ── Divisions ── */
     .divisions {
-      max-width: 1000px;
+      max-width: 1060px;
       margin: 0 auto;
-      padding: 4rem 3rem 8rem;
+      padding: 2rem 3rem 8rem;
+      position: relative;
+      z-index: 2;
     }
 
     .division-row {
       display: grid;
-      grid-template-columns: 180px 1fr;
+      grid-template-columns: 200px 1fr;
       gap: 4rem;
-      padding: 5rem 0;
+      padding: 4.5rem 0;
       align-items: start;
     }
 
     .division-name {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       font-weight: 500;
       color: var(--ivory);
       letter-spacing: 0.03em;
     }
 
     .division-type {
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       color: var(--text-label);
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -189,7 +150,7 @@
 
     .division-body {
       color: var(--text-body);
-      font-size: 1.05rem;
+      font-size: 1.15rem;
       line-height: 1.85;
       font-weight: 300;
     }
@@ -198,13 +159,13 @@
       margin-top: 1.5rem;
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 1.1rem;
     }
 
     .division-tag {
-      font-size: 0.78rem;
+      font-size: 0.88rem;
       color: var(--text-label);
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
     }
 
     .division-tag::before {
@@ -228,12 +189,12 @@
     }
 
     .footer-left {
-      font-size: 0.78rem;
+      font-size: 0.85rem;
       color: var(--text-label);
     }
 
     .footer-right a {
-      font-size: 0.78rem;
+      font-size: 0.85rem;
       color: var(--text-label);
       text-decoration: none;
       transition: color 0.3s;
@@ -241,10 +202,21 @@
 
     .footer-right a:hover { color: var(--text-body); }
 
-    /* ── Scroll Reveal Animations ── */
+    /* ── Animations ── */
+    .word-reveal {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(18px);
+      animation: wordIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    @keyframes wordIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .reveal {
       opacity: 0;
-      transform: translateY(24px);
+      transform: translateY(28px);
       transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94),
                   transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
@@ -254,35 +226,11 @@
       transform: translateY(0);
     }
 
-    .reveal-d1 { transition-delay: 0.12s; }
-    .reveal-d2 { transition-delay: 0.24s; }
-    .reveal-d3 { transition-delay: 0.36s; }
-
-    /* Staggered word reveal for hero */
-    .word-reveal {
-      display: inline-block;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: wordIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-    }
-
-    @keyframes wordIn {
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Fade-out on scroll away */
-    .fade-section {
-      transition: opacity 0.5s ease;
-    }
-
-    .fade-section.dimmed {
-      opacity: 0.15;
-    }
-
     /* ── Responsive ── */
     @media (max-width: 768px) {
       nav { padding: 1.2rem 1.5rem; }
-      .divisions { padding: 3rem 1.5rem 6rem; }
+      .network-section { height: 50vh; }
+      .divisions { padding: 2rem 1.5rem 6rem; }
       .division-row {
         grid-template-columns: 1fr;
         gap: 1.2rem;
@@ -305,22 +253,20 @@
     </a>
   </nav>
 
-  <section class="hero fade-section" id="hero">
+  <section class="hero" id="hero">
     <div class="hero-center">
       <img src="logo-gold-transparent.png" alt="" class="hero-icon">
       <h1 class="hero-name" id="heroName"></h1>
       <div class="hero-slogan" id="heroSlogan"></div>
     </div>
-    <div class="scroll-hint">
-      <span>Scroll</span>
-      <div class="scroll-dot"></div>
-    </div>
   </section>
 
-  <div class="section-spacer"></div>
+  <!-- Interactive network visualization -->
+  <div class="network-section" id="networkSection">
+    <canvas id="networkCanvas"></canvas>
+  </div>
 
   <div class="divisions">
-
     <div class="division-row reveal">
       <div>
         <div class="division-name">HFT</div>
@@ -372,7 +318,6 @@
         </div>
       </div>
     </div>
-
   </div>
 
   <footer>
@@ -381,37 +326,245 @@
   </footer>
 
   <script>
-    // ── Staggered word reveal on hero ──
+    // ── Hero word stagger ──
     function animateWords(el, text, baseDelay) {
-      const words = text.split(' ');
-      el.innerHTML = words.map((w, i) =>
+      el.innerHTML = text.split(' ').map((w, i) =>
         `<span class="word-reveal" style="animation-delay:${baseDelay + i * 0.12}s">${w}</span>`
       ).join(' ');
     }
-
     animateWords(document.getElementById('heroName'), 'MOIRAI RESEARCH', 0.3);
     animateWords(document.getElementById('heroSlogan'), 'Prediction Market HFT', 0.8);
 
-    // ── Hero fades out as you scroll past ──
+    // ── Hero parallax fade ──
     const hero = document.getElementById('hero');
     window.addEventListener('scroll', () => {
-      const scrollY = window.scrollY;
-      const heroH = hero.offsetHeight;
-      const ratio = Math.min(scrollY / (heroH * 0.6), 1);
-      hero.style.opacity = 1 - ratio * 0.85;
-      hero.style.transform = `translateY(${ratio * -30}px)`;
+      const r = Math.min(window.scrollY / (hero.offsetHeight * 0.6), 1);
+      hero.style.opacity = 1 - r * 0.85;
+      hero.style.transform = `translateY(${r * -40}px)`;
     }, { passive: true });
 
-    // ── Division rows fade in on scroll ──
-    const revealObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.2, rootMargin: '0px 0px -60px 0px' });
+    // ── Division reveal ──
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+    // ══════════════════════════════════════════════
+    // ── NETWORK PARTICLE SYSTEM ──
+    // Interconnected nodes with flowing data streams
+    // Mouse-reactive, gold-accented
+    // ══════════════════════════════════════════════
+    (function() {
+      const canvas = document.getElementById('networkCanvas');
+      const ctx = canvas.getContext('2d');
+      let W, H, particles, mouse, raf;
+
+      const PARTICLE_COUNT = 120;
+      const CONNECTION_DIST = 160;
+      const MOUSE_RADIUS = 250;
+
+      mouse = { x: -1000, y: -1000 };
+
+      function resize() {
+        const section = document.getElementById('networkSection');
+        W = canvas.width = section.offsetWidth;
+        H = canvas.height = section.offsetHeight;
+      }
+
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+
+        reset() {
+          this.x = Math.random() * W;
+          this.y = Math.random() * H;
+          this.vx = (Math.random() - 0.5) * 0.4;
+          this.vy = (Math.random() - 0.5) * 0.25 + 0.15; // slight downward drift
+          this.radius = Math.random() * 1.5 + 0.5;
+          this.life = 1;
+          // Some particles are "data" — they move faster and are gold
+          this.isData = Math.random() < 0.15;
+          if (this.isData) {
+            this.vy = Math.random() * 0.8 + 0.3;
+            this.vx = (Math.random() - 0.5) * 1.2;
+            this.radius = Math.random() * 1 + 0.5;
+          }
+          this.baseAlpha = this.isData ? 0.6 : 0.2 + Math.random() * 0.15;
+          this.pulseOffset = Math.random() * Math.PI * 2;
+        }
+
+        update(t) {
+          this.x += this.vx;
+          this.y += this.vy;
+
+          // Mouse repulsion
+          const dx = this.x - mouse.x;
+          const dy = this.y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < MOUSE_RADIUS) {
+            const force = (1 - dist / MOUSE_RADIUS) * 0.8;
+            this.vx += (dx / dist) * force;
+            this.vy += (dy / dist) * force;
+          }
+
+          // Damping
+          this.vx *= 0.995;
+          this.vy *= 0.995;
+
+          // Subtle pulse
+          this.life = this.baseAlpha + Math.sin(t * 0.002 + this.pulseOffset) * 0.08;
+
+          // Wrap around
+          if (this.x < -20) this.x = W + 20;
+          if (this.x > W + 20) this.x = -20;
+          if (this.y < -20) { this.y = H + 20; }
+          if (this.y > H + 20) { this.y = -20; }
+        }
+
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          if (this.isData) {
+            ctx.fillStyle = `rgba(201, 169, 98, ${this.life})`;
+          } else {
+            ctx.fillStyle = `rgba(200, 196, 188, ${this.life})`;
+          }
+          ctx.fill();
+        }
+      }
+
+      function init() {
+        resize();
+        particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          particles.push(new Particle());
+        }
+      }
+
+      function drawConnections() {
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < CONNECTION_DIST) {
+              const alpha = (1 - dist / CONNECTION_DIST) * 0.08;
+              const isGold = particles[i].isData || particles[j].isData;
+
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = isGold
+                ? `rgba(201, 169, 98, ${alpha * 1.5})`
+                : `rgba(200, 196, 188, ${alpha})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Mouse connections — connect to nearby particles
+        const mdx = mouse.x, mdy = mouse.y;
+        if (mdx > 0 && mdy > 0) {
+          for (let i = 0; i < particles.length; i++) {
+            const dx = particles[i].x - mdx;
+            const dy = particles[i].y - mdy;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < MOUSE_RADIUS * 0.7) {
+              const alpha = (1 - dist / (MOUSE_RADIUS * 0.7)) * 0.15;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(mdx, mdy);
+              ctx.strokeStyle = `rgba(201, 169, 98, ${alpha})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      // Occasional "data burst" — a fast-moving bright particle
+      let burstTimer = 0;
+      function maybeSpawnBurst(t) {
+        if (t - burstTimer > 3000 + Math.random() * 4000) {
+          burstTimer = t;
+          const p = new Particle();
+          p.isData = true;
+          p.vx = (Math.random() - 0.5) * 3;
+          p.vy = Math.random() * 2 + 0.5;
+          p.radius = 2;
+          p.baseAlpha = 0.9;
+          p.x = Math.random() * W;
+          p.y = -10;
+          particles.push(p);
+          // Keep count reasonable
+          if (particles.length > PARTICLE_COUNT + 10) {
+            particles.splice(PARTICLE_COUNT, 1);
+          }
+        }
+      }
+
+      function animate(t) {
+        ctx.clearRect(0, 0, W, H);
+
+        // Background gradient fade at top and bottom
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, 'rgba(7, 15, 28, 0.9)');
+        grad.addColorStop(0.15, 'rgba(7, 15, 28, 0)');
+        grad.addColorStop(0.85, 'rgba(7, 15, 28, 0)');
+        grad.addColorStop(1, 'rgba(7, 15, 28, 0.9)');
+
+        particles.forEach(p => p.update(t));
+        drawConnections();
+        particles.forEach(p => p.draw());
+        maybeSpawnBurst(t);
+
+        // Apply fade at edges
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        raf = requestAnimationFrame(animate);
+      }
+
+      // Throttled mouse tracking
+      let mouseThrottle = false;
+      const section = document.getElementById('networkSection');
+      section.addEventListener('mousemove', e => {
+        if (mouseThrottle) return;
+        mouseThrottle = true;
+        requestAnimationFrame(() => {
+          const rect = section.getBoundingClientRect();
+          mouse.x = e.clientX - rect.left;
+          mouse.y = e.clientY - rect.top;
+          mouseThrottle = false;
+        });
+      });
+
+      section.addEventListener('mouseleave', () => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+      });
+
+      window.addEventListener('resize', () => {
+        resize();
+      });
+
+      // Only animate when visible
+      const canvasObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            if (!raf) raf = requestAnimationFrame(animate);
+          } else {
+            if (raf) { cancelAnimationFrame(raf); raf = null; }
+          }
+        });
+      }, { threshold: 0.05 });
+
+      init();
+      canvasObs.observe(section);
+    })();
   </script>
 
 </body>
