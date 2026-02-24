@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moirai Research</title>
+  <meta name="description" content="Moirai Research — Prediction market intelligence, proprietary trading, and strategic advisory.">
+  <link rel="icon" type="image/png" href="logo-gold-transparent.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --midnight: #0A1628;
+      --midnight-light: #0f1e35;
+      --midnight-lighter: #162844;
+      --gold: #C9A962;
+      --gold-dim: rgba(201, 169, 98, 0.12);
+      --gold-glow: rgba(201, 169, 98, 0.06);
+      --ivory: #F8F6F1;
+      --slate: #64748B;
+      --border: rgba(201, 169, 98, 0.1);
+      --border-hover: rgba(201, 169, 98, 0.2);
+      --text-primary: #E8E4DC;
+      --text-secondary: #8A9AB5;
+      --text-muted: #4A5568;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--midnight);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* ── Subtle grain overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* ── Navigation ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.25rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      background: rgba(10, 22, 40, 0.85);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.4s ease;
+    }
+
+    nav.scrolled {
+      border-bottom-color: var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+
+    .nav-logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
+
+    .nav-logo-primary {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 0.03em;
+    }
+
+    .nav-logo-secondary {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.55rem;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      transition: color 0.25s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--gold);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle radial glow */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 30%;
+      left: -10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(201, 169, 98, 0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      max-width: 780px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-tagline {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+      opacity: 0.8;
+    }
+
+    .hero h1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(3rem, 6.5vw, 5.5rem);
+      font-weight: 300;
+      line-height: 1.08;
+      letter-spacing: -0.01em;
+      margin-bottom: 2rem;
+      color: var(--ivory);
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 400;
+      color: var(--gold);
+    }
+
+    .hero-description {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 500px;
+      line-height: 1.75;
+      font-weight: 300;
+    }
+
+    .hero-divider {
+      position: absolute;
+      bottom: 5rem;
+      left: 3rem;
+      width: 48px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      opacity: 0.4;
+    }
+
+    /* ── Sections ── */
+    section {
+      padding: 7rem 3rem;
+    }
+
+    .section-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 3.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      opacity: 0.7;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border-hover), transparent);
+      max-width: 180px;
+    }
+
+    /* ── About ── */
+    .about {
+      border-top: 1px solid var(--border);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      max-width: 1100px;
+    }
+
+    .about-heading {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 300;
+      line-height: 1.2;
+      color: var(--ivory);
+    }
+
+    .about-heading em {
+      font-style: italic;
+      font-weight: 400;
+      color: var(--gold);
+    }
+
+    .about-text {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.85;
+      font-weight: 300;
+    }
+
+    .about-text p + p {
+      margin-top: 1.5rem;
+    }
+
+    /* ── Stats ── */
+    .stats {
+      padding: 4rem 3rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      max-width: 900px;
+    }
+
+    .stat-item {
+      text-align: left;
+      padding: 1rem 0;
+    }
+
+    .stat-item:not(:last-child) {
+      border-right: 1px solid var(--border);
+      padding-right: 3rem;
+    }
+
+    .stat-item:not(:first-child) {
+      padding-left: 3rem;
+    }
+
+    .stat-value {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.3rem;
+      color: var(--ivory);
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── Divisions ── */
+    .divisions {
+      border-top: 1px solid var(--border);
+    }
+
+    .divisions-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      max-width: 1200px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .division-card {
+      background: var(--midnight);
+      padding: 3rem 2.5rem;
+      transition: background 0.4s ease;
+      cursor: default;
+      position: relative;
+    }
+
+    .division-card:hover {
+      background: var(--midnight-light);
+    }
+
+    .division-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .division-card:hover::before {
+      opacity: 0.3;
+    }
+
+    .division-number {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 0.85rem;
+      color: var(--gold);
+      opacity: 0.5;
+      margin-bottom: 2rem;
+      font-style: italic;
+    }
+
+    .division-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--ivory);
+    }
+
+    .division-subtitle {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--gold);
+      letter-spacing: 0.15em;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+    }
+
+    .division-desc {
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      line-height: 1.75;
+      font-weight: 300;
+    }
+
+    .division-list {
+      margin-top: 2rem;
+      list-style: none;
+    }
+
+    .division-list li {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 0.5rem 0;
+      border-top: 1px solid var(--border);
+      letter-spacing: 0.02em;
+      transition: color 0.2s ease;
+    }
+
+    .division-card:hover .division-list li {
+      color: var(--text-secondary);
+    }
+
+    .division-list li:last-child {
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Approach ── */
+    .approach {
+      border-top: 1px solid var(--border);
+    }
+
+    .approach-content {
+      max-width: 720px;
+    }
+
+    .approach-quote {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+      font-weight: 300;
+      line-height: 1.4;
+      color: var(--ivory);
+      margin-bottom: 2rem;
+      position: relative;
+      padding-left: 2rem;
+      border-left: 2px solid var(--gold);
+      font-style: italic;
+    }
+
+    .approach-pillars {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3rem;
+      margin-top: 4rem;
+    }
+
+    .pillar {
+      padding: 0;
+    }
+
+    .pillar-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 0.8rem;
+    }
+
+    .pillar-text {
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      line-height: 1.75;
+      font-weight: 300;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 3.5rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .footer-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-logo-icon {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+
+    .footer-logo-text {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 0.03em;
+    }
+
+    .footer-copy {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .footer-right {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: right;
+      letter-spacing: 0.02em;
+    }
+
+    .footer-right a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.25s ease;
+    }
+
+    .footer-right a:hover {
+      color: var(--gold);
+    }
+
+    /* ── Animations ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      nav {
+        padding: 1rem 1.5rem;
+      }
+
+      .nav-links {
+        gap: 1.5rem;
+      }
+
+      .nav-links a {
+        font-size: 0.75rem;
+      }
+
+      section {
+        padding: 4.5rem 1.5rem;
+      }
+
+      .hero {
+        padding: 0 1.5rem;
+      }
+
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+
+      .stats {
+        padding: 3rem 1.5rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .stat-item:not(:last-child) {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding-right: 0;
+        padding-bottom: 1.5rem;
+      }
+
+      .stat-item:not(:first-child) {
+        padding-left: 0;
+      }
+
+      .divisions-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .approach-pillars {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      footer {
+        flex-direction: column;
+        gap: 2rem;
+        padding: 3rem 1.5rem;
+        align-items: flex-start;
+      }
+
+      .footer-right {
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 {
+        font-size: 2.4rem;
+      }
+
+      .division-card {
+        padding: 2rem 1.5rem;
+      }
+
+      .nav-logo-secondary {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav id="nav">
+    <a href="#" class="nav-logo">
+      <img src="logo-gold-transparent.png" alt="Moirai" class="nav-logo-icon">
+      <div class="nav-logo-text">
+        <span class="nav-logo-primary">MOIRAI</span>
+        <span class="nav-logo-secondary">RESEARCH</span>
+      </div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#divisions">Divisions</a></li>
+      <li><a href="#approach">Approach</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-tagline">Prediction Markets · Quantitative Research · Advisory</div>
+      <h1>We trade on <em>conviction</em>,<br>built from data.</h1>
+      <p class="hero-description">
+        Moirai Research is a data-driven prediction market firm specializing in high-frequency trading, quantitative research, and strategic advisory.
+      </p>
+    </div>
+    <div class="hero-divider"></div>
+  </section>
+
+  <!-- About -->
+  <section class="about" id="about">
+    <div class="section-label reveal">About</div>
+    <div class="about-grid">
+      <div class="reveal">
+        <h2 class="about-heading">Built by <em>specialists</em>.<br>Not generalists.</h2>
+      </div>
+      <div class="about-text reveal reveal-delay-1">
+        <p>
+          We operate at the intersection of prediction markets and high-frequency trading — a domain where precision compounds. Our team brings deep expertise in market microstructure, quantitative modeling, and real-time systems engineering.
+        </p>
+        <p>
+          Currently focused on 15-minute and 5-minute Up/Down markets, we don't chase breadth. We go deep on what we know, and let the results speak.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stats-grid">
+      <div class="stat-item reveal">
+        <div class="stat-value">24 / 7</div>
+        <div class="stat-label">Market Coverage</div>
+      </div>
+      <div class="stat-item reveal reveal-delay-1">
+        <div class="stat-value">Sub-second</div>
+        <div class="stat-label">Execution Latency</div>
+      </div>
+      <div class="stat-item reveal reveal-delay-2">
+        <div class="stat-value">Data-first</div>
+        <div class="stat-label">Decision Framework</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Divisions -->
+  <section class="divisions" id="divisions">
+    <div class="section-label reveal">Divisions</div>
+    <div class="divisions-grid">
+
+      <div class="division-card reveal">
+        <div class="division-number">i.</div>
+        <div class="division-title">HFT</div>
+        <div class="division-subtitle">Proprietary Trading</div>
+        <div class="division-desc">
+          Our proprietary trading arm deploys systematic strategies across prediction markets with a focus on speed, precision, and disciplined risk management.
+        </div>
+        <ul class="division-list">
+          <li>Market making</li>
+          <li>Statistical arbitrage</li>
+          <li>Microstructure alpha</li>
+          <li>Real-time risk systems</li>
+        </ul>
+      </div>
+
+      <div class="division-card reveal reveal-delay-1">
+        <div class="division-number">ii.</div>
+        <div class="division-title">Research</div>
+        <div class="division-subtitle">Quantitative Research</div>
+        <div class="division-desc">
+          The research arm develops models, tooling, and frameworks that drive edge across all operations — from signal generation to execution optimization.
+        </div>
+        <ul class="division-list">
+          <li>Regime detection models</li>
+          <li>Volatility forecasting</li>
+          <li>Execution analytics</li>
+          <li>Market structure analysis</li>
+        </ul>
+      </div>
+
+      <div class="division-card reveal reveal-delay-2">
+        <div class="division-number">iii.</div>
+        <div class="division-title">Advisory</div>
+        <div class="division-subtitle">Strategic Advisory</div>
+        <div class="division-desc">
+          We advise select partners on prediction market infrastructure, quantitative strategy, and market design — grounded in real operational experience.
+        </div>
+        <ul class="division-list">
+          <li>Market design consulting</li>
+          <li>Liquidity strategy</li>
+          <li>Infrastructure review</li>
+          <li>Quantitative due diligence</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Approach -->
+  <section class="approach" id="approach">
+    <div class="section-label reveal">Approach</div>
+    <div class="approach-content">
+      <div class="approach-quote reveal">
+        We don't seek attention. We seek edge. The work speaks — and the right people find us.
+      </div>
+      <div class="approach-pillars">
+        <div class="pillar reveal">
+          <div class="pillar-title">Depth over breadth</div>
+          <div class="pillar-text">We specialize in a narrow domain and go deeper than anyone else. Mastery of short-duration Up/Down markets is not a limitation — it's our advantage.</div>
+        </div>
+        <div class="pillar reveal reveal-delay-1">
+          <div class="pillar-title">Data over narrative</div>
+          <div class="pillar-text">Every decision, from model updates to risk limits, is backed by quantitative evidence. We build conviction from data, not stories.</div>
+        </div>
+        <div class="pillar reveal reveal-delay-2">
+          <div class="pillar-title">Systems over heroics</div>
+          <div class="pillar-text">Reliable systems beat brilliant individuals. Our infrastructure is designed for consistency, not one-off wins.</div>
+        </div>
+        <div class="pillar reveal reveal-delay-3">
+          <div class="pillar-title">Quiet excellence</div>
+          <div class="pillar-text">We don't pitch, promote, or seek the spotlight. Our track record is our calling card — if you're here, you already know.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-left">
+      <div class="footer-logo">
+        <img src="logo-gold-transparent.png" alt="" class="footer-logo-icon">
+        <span class="footer-logo-text">Moirai Research</span>
+      </div>
+      <div class="footer-copy">&copy; 2025 Moirai Research. All rights reserved.</div>
+    </div>
+    <div class="footer-right">
+      <a href="mailto:contact@moirairesearch.com">contact@moirairesearch.com</a>
+    </div>
+  </footer>
+
+  <script>
+    // Nav scroll
+    const nav = document.getElementById('nav');
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          nav.classList.toggle('scrolled', window.scrollY > 60);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+
+    // Reveal on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Smooth anchor scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+node_modules/
+brand-assets/
+*.jpg
+screenshot-*.png
+v2-*.png
+logo-gold.png
+logo-dark.png
+logo-gold-b64.txt
+logo-lockup-*.jpg
+logo-icon-*.jpg
+package*.json
