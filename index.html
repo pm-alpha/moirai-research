@@ -426,9 +426,6 @@
           this.vx += this.driftVX * 0.01;
           this.vy += this.driftVY * 0.01;
 
-          // Scroll velocity pushes all particles
-          this.vy += scrollVelocity * SCROLL_PUSH * 0.01;
-
           // Pulse
           this.alpha = this.baseAlpha + Math.sin(t * 0.002 + this.pulseOffset) * 0.08;
 
