@@ -214,9 +214,8 @@
     /* ── Scroll-driven fade for divisions ── */
     .division-row {
       opacity: 0;
-      transform: translateY(40px);
-      transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform: translateY(60px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
     }
 
     .division-row.visible {
@@ -224,10 +223,9 @@
       transform: translateY(0);
     }
 
-    /* Each division fades out when scrolled well past */
     .division-row.fading-out {
-      opacity: 0.15;
-      transform: translateY(-20px);
+      opacity: 0;
+      transform: translateY(-40px);
     }
 
     /* ── Responsive ── */
@@ -349,20 +347,25 @@
       hero.style.opacity = 1 - heroR * 0.9;
       hero.style.transform = `translateY(${heroR * -50}px)`;
 
-      // Division rows: fade in when entering, fade out when leaving top
+      // Division rows: fade in when entering, fade out when leaving
       divisionRows.forEach(row => {
         const rect = row.getBoundingClientRect();
-        const center = rect.top + rect.height / 2;
 
-        // Fade in when entering viewport
-        if (rect.top < vh * 0.85) {
+        // Fade in when top enters bottom 75% of viewport
+        if (rect.top < vh * 0.75 && rect.bottom > vh * 0.1) {
           row.classList.add('visible');
+          row.classList.remove('fading-out');
         }
 
-        // Fade out when scrolled well past (center is above 10% of viewport)
-        if (center < vh * -0.1) {
+        // Fade out when bottom goes above 15% of viewport (scrolled past)
+        if (rect.bottom < vh * 0.15) {
           row.classList.add('fading-out');
-        } else {
+          row.classList.remove('visible');
+        }
+
+        // Also fade out if top is below viewport (scrolled back up past it)
+        if (rect.top > vh * 0.9) {
+          row.classList.remove('visible');
           row.classList.remove('fading-out');
         }
       });
