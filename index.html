@@ -76,7 +76,6 @@
       top: 0; left: 0;
       width: 100%; height: 100%;
       z-index: 1;
-      pointer-events: none;
     }
 
     /* ── Hero ── */
@@ -558,13 +557,16 @@
       let scrollY = 0;
       let prevScrollY = 0;
       let scrollVelocity = 0;
+      let mouse = { x: -1000, y: -1000 };
+      const MOUSE_RADIUS = 180;
+      const MOUSE_STRENGTH = 4;
 
       const PARTICLE_COUNT = 400;
       const CONNECTION_DIST = 150;
-      const REPEL_MARGIN = 100;       // how far from panel edge repulsion starts
-      const REPEL_STRENGTH = 6;       // max repulsion force
-      const RETURN_STRENGTH = 0.015;  // how fast particles drift home
-      const SCROLL_PUSH = 0.4;        // how much scroll velocity pushes particles
+      const REPEL_MARGIN = 100;
+      const REPEL_STRENGTH = 7.2;     // 20% more than 6
+      const RETURN_STRENGTH = 0.015;
+      const SCROLL_PUSH = 0.4;
 
       function resize() {
         W = canvas.width = window.innerWidth;
@@ -684,9 +686,20 @@
             }
           }
 
+          // Mouse repulsion
+          const mdx = this.x - mouse.x;
+          const mdy = this.y - mouse.y;
+          const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+          if (mDist < MOUSE_RADIUS && mDist > 0) {
+            const mForce = (1 - mDist / MOUSE_RADIUS) * MOUSE_STRENGTH;
+            totalRepelX += (mdx / mDist) * mForce;
+            totalRepelY += (mdy / mDist) * mForce;
+            maxDisplace = Math.max(maxDisplace, (1 - mDist / MOUSE_RADIUS) * 0.5);
+          }
+
           // Apply repulsion (stronger during scroll)
-          this.vx += totalRepelX * 0.15 * scrollBoost;
-          this.vy += totalRepelY * 0.15 * scrollBoost;
+          this.vx += totalRepelX * 0.18 * scrollBoost;
+          this.vy += totalRepelY * 0.18 * scrollBoost;
 
           // Track displacement for alpha
           this.displaced += (maxDisplace - this.displaced) * 0.1;
@@ -818,6 +831,15 @@
 
       window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
       window.addEventListener('resize', resize);
+
+      canvas.addEventListener('mousemove', e => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+      canvas.addEventListener('mouseleave', () => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+      });
 
       init();
       raf = requestAnimationFrame(animate);
