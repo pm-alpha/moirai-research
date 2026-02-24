@@ -426,7 +426,7 @@
 
         update(t, zones) {
           // Natural drift (boosted during scroll)
-          const scrollBoost = Math.abs(scrollVelocity) > 0.5 ? 1.3 : 1;
+          const scrollBoost = Math.abs(scrollVelocity) > 0.5 ? 1.95 : 1;
           this.vx += this.driftVX * 0.01 * scrollBoost;
           this.vy += this.driftVY * 0.01 * scrollBoost;
 
