@@ -61,6 +61,15 @@
       letter-spacing: 0.06em;
     }
 
+    /* ── Full-page canvas ── */
+    #networkCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
     /* ── Hero ── */
     .hero {
       height: 100vh;
@@ -100,26 +109,11 @@
       text-transform: uppercase;
     }
 
-    /* ── Network Canvas — fills the gap between hero and divisions ── */
-    .network-section {
-      position: relative;
-      height: 80vh;
-      overflow: hidden;
-    }
-
-    #networkCanvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
     /* ── Divisions ── */
     .divisions {
       max-width: 1060px;
       margin: 0 auto;
-      padding: 2rem 3rem 8rem;
+      padding: 6rem 3rem 8rem;
       position: relative;
       z-index: 2;
     }
@@ -186,12 +180,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: relative;
+      z-index: 2;
     }
 
-    .footer-left {
-      font-size: 0.85rem;
-      color: var(--text-label);
-    }
+    .footer-left { font-size: 0.85rem; color: var(--text-label); }
 
     .footer-right a {
       font-size: 0.85rem;
@@ -199,10 +192,9 @@
       text-decoration: none;
       transition: color 0.3s;
     }
-
     .footer-right a:hover { color: var(--text-body); }
 
-    /* ── Animations ── */
+    /* ── Word reveal ── */
     .word-reveal {
       display: inline-block;
       opacity: 0;
@@ -214,28 +206,40 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .reveal {
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                  transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* ── Scroll-driven fade for hero ── */
+    .hero {
+      transition: opacity 0.05s linear;
     }
 
-    .reveal.visible {
+    /* ── Scroll-driven fade for divisions ── */
+    .division-row {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .division-row.visible {
       opacity: 1;
       transform: translateY(0);
+    }
+
+    /* Each division fades out when scrolled well past */
+    .division-row.fading-out {
+      opacity: 0.15;
+      transform: translateY(-20px);
     }
 
     /* ── Responsive ── */
     @media (max-width: 768px) {
       nav { padding: 1.2rem 1.5rem; }
-      .network-section { height: 50vh; }
-      .divisions { padding: 2rem 1.5rem 6rem; }
+      .divisions { padding: 4rem 1.5rem 6rem; }
       .division-row {
         grid-template-columns: 1fr;
         gap: 1.2rem;
         padding: 3.5rem 0;
       }
+      .hero-icon { width: 100px; height: 100px; }
       footer {
         flex-direction: column;
         gap: 1rem;
@@ -245,6 +249,8 @@
   </style>
 </head>
 <body>
+
+  <canvas id="networkCanvas"></canvas>
 
   <nav>
     <a href="#" class="nav-logo">
@@ -261,13 +267,8 @@
     </div>
   </section>
 
-  <!-- Interactive network visualization -->
-  <div class="network-section" id="networkSection">
-    <canvas id="networkCanvas"></canvas>
-  </div>
-
-  <div class="divisions">
-    <div class="division-row reveal">
+  <div class="divisions" id="divisions">
+    <div class="division-row" data-idx="0">
       <div>
         <div class="division-name">HFT</div>
         <div class="division-type">Proprietary Trading</div>
@@ -285,7 +286,7 @@
       </div>
     </div>
 
-    <div class="division-row reveal">
+    <div class="division-row" data-idx="1">
       <div>
         <div class="division-name">Research</div>
         <div class="division-type">Quantitative Research</div>
@@ -302,7 +303,7 @@
       </div>
     </div>
 
-    <div class="division-row reveal">
+    <div class="division-row" data-idx="2">
       <div>
         <div class="division-name">Advisory</div>
         <div class="division-type">By Invitation</div>
@@ -335,101 +336,143 @@
     animateWords(document.getElementById('heroName'), 'MOIRAI RESEARCH', 0.3);
     animateWords(document.getElementById('heroSlogan'), 'Prediction Market HFT', 0.8);
 
-    // ── Hero parallax fade ──
+    // ── Scroll-driven element fading ──
     const hero = document.getElementById('hero');
-    window.addEventListener('scroll', () => {
-      const r = Math.min(window.scrollY / (hero.offsetHeight * 0.6), 1);
-      hero.style.opacity = 1 - r * 0.85;
-      hero.style.transform = `translateY(${r * -40}px)`;
-    }, { passive: true });
+    const divisionRows = document.querySelectorAll('.division-row');
 
-    // ── Division reveal ──
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
-    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    function onScroll() {
+      const scrollY = window.scrollY;
+      const vh = window.innerHeight;
 
-    // ══════════════════════════════════════════════
-    // ── NETWORK PARTICLE SYSTEM ──
-    // Interconnected nodes with flowing data streams
-    // Mouse-reactive, gold-accented
-    // ══════════════════════════════════════════════
+      // Hero fades out
+      const heroR = Math.min(scrollY / (vh * 0.5), 1);
+      hero.style.opacity = 1 - heroR * 0.9;
+      hero.style.transform = `translateY(${heroR * -50}px)`;
+
+      // Division rows: fade in when entering, fade out when leaving top
+      divisionRows.forEach(row => {
+        const rect = row.getBoundingClientRect();
+        const center = rect.top + rect.height / 2;
+
+        // Fade in when entering viewport
+        if (rect.top < vh * 0.85) {
+          row.classList.add('visible');
+        }
+
+        // Fade out when scrolled well past (center is above 10% of viewport)
+        if (center < vh * -0.1) {
+          row.classList.add('fading-out');
+        } else {
+          row.classList.remove('fading-out');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // ══════════════════════════════════════════
+    // ── FULL-PAGE PARTICLE NETWORK ──
+    // Covers hero + flows into divisions
+    // Scroll-reactive: particles part for division panels
+    // ══════════════════════════════════════════
     (function() {
       const canvas = document.getElementById('networkCanvas');
       const ctx = canvas.getContext('2d');
-      let W, H, particles, mouse, raf;
+      let W, H, particles, raf;
+      let scrollY = 0;
 
-      const PARTICLE_COUNT = 200;
-      const CONNECTION_DIST = 180;
-      const MOUSE_RADIUS = 300;
-
-      mouse = { x: -1000, y: -1000 };
+      const PARTICLE_COUNT = 400;
+      const CONNECTION_DIST = 150;
 
       function resize() {
-        const section = document.getElementById('networkSection');
-        W = canvas.width = section.offsetWidth;
-        H = canvas.height = section.offsetHeight;
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
       }
 
       class Particle {
-        constructor() {
-          this.reset();
-        }
+        constructor() { this.reset(true); }
 
-        reset() {
+        reset(initial) {
           this.x = Math.random() * W;
-          this.y = Math.random() * H;
-          this.vx = (Math.random() - 0.5) * 0.4;
-          this.vy = (Math.random() - 0.5) * 0.25 + 0.15; // slight downward drift
+          this.y = initial ? Math.random() * H : -10;
+          this.baseX = this.x;
+          this.baseY = this.y;
+          this.vx = (Math.random() - 0.5) * 0.35;
+          this.vy = (Math.random() - 0.5) * 0.2 + 0.12;
           this.radius = Math.random() * 2.5 + 1;
-          this.life = 1;
-          // Some particles are "data" — they move faster and are gold
           this.isData = Math.random() < 0.2;
           if (this.isData) {
-            this.vy = Math.random() * 0.8 + 0.3;
-            this.vx = (Math.random() - 0.5) * 1.2;
+            this.vy = Math.random() * 0.6 + 0.3;
+            this.vx = (Math.random() - 0.5) * 1;
             this.radius = Math.random() * 2 + 0.8;
           }
           this.baseAlpha = this.isData ? 0.8 : 0.3 + Math.random() * 0.2;
+          this.alpha = this.baseAlpha;
           this.pulseOffset = Math.random() * Math.PI * 2;
+          // Repulsion state
+          this.repelX = 0;
+          this.repelY = 0;
         }
 
-        update(t) {
+        update(t, clearZones) {
           this.x += this.vx;
           this.y += this.vy;
 
-          // Mouse repulsion
-          const dx = this.x - mouse.x;
-          const dy = this.y - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < MOUSE_RADIUS) {
-            const force = (1 - dist / MOUSE_RADIUS) * 0.8;
-            this.vx += (dx / dist) * force;
-            this.vy += (dy / dist) * force;
+          // Pulse
+          this.alpha = this.baseAlpha + Math.sin(t * 0.002 + this.pulseOffset) * 0.08;
+
+          // Repulsion from division panels (scroll-driven)
+          this.repelX = 0;
+          this.repelY = 0;
+
+          for (const zone of clearZones) {
+            // Zone is in page coordinates, particle is in viewport coordinates
+            const zoneTop = zone.top - scrollY;
+            const zoneBottom = zone.bottom - scrollY;
+            const zoneLeft = zone.left;
+            const zoneRight = zone.right;
+            const margin = 60;
+
+            // Check if particle is near or inside zone
+            const nearX = this.x > zoneLeft - margin && this.x < zoneRight + margin;
+            const nearY = this.y > zoneTop - margin && this.y < zoneBottom + margin;
+
+            if (nearX && nearY) {
+              // Calculate repulsion from zone center
+              const zoneCX = (zoneLeft + zoneRight) / 2;
+              const zoneCY = (zoneTop + zoneBottom) / 2;
+              const dx = this.x - zoneCX;
+              const dy = this.y - zoneCY;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const zoneR = Math.max(zoneRight - zoneLeft, zoneBottom - zoneTop) / 2 + margin;
+
+              if (dist < zoneR && dist > 0) {
+                const force = (1 - dist / zoneR) * 2.5;
+                this.repelX += (dx / dist) * force;
+                this.repelY += (dy / dist) * force;
+                // Dim particles near panels
+                this.alpha *= 0.5 + (dist / zoneR) * 0.5;
+              }
+            }
           }
 
-          // Damping
-          this.vx *= 0.995;
-          this.vy *= 0.995;
+          this.x += this.repelX;
+          this.y += this.repelY;
 
-          // Subtle pulse
-          this.life = this.baseAlpha + Math.sin(t * 0.002 + this.pulseOffset) * 0.08;
-
-          // Wrap around
-          if (this.x < -20) this.x = W + 20;
-          if (this.x > W + 20) this.x = -20;
-          if (this.y < -20) { this.y = H + 20; }
-          if (this.y > H + 20) { this.y = -20; }
+          // Wrap
+          if (this.x < -30) this.x = W + 30;
+          if (this.x > W + 30) this.x = -30;
+          if (this.y > H + 30) { this.x = Math.random() * W; this.y = -30; }
+          if (this.y < -50) this.y = H + 30;
         }
 
         draw() {
           ctx.beginPath();
           ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-          if (this.isData) {
-            ctx.fillStyle = `rgba(201, 169, 98, ${this.life})`;
-          } else {
-            ctx.fillStyle = `rgba(200, 196, 188, ${this.life})`;
-          }
+          ctx.fillStyle = this.isData
+            ? `rgba(201, 169, 98, ${this.alpha})`
+            : `rgba(210, 206, 200, ${this.alpha})`;
           ctx.fill();
         }
       }
@@ -450,125 +493,92 @@
             const dist = Math.sqrt(dx * dx + dy * dy);
 
             if (dist < CONNECTION_DIST) {
-              const alpha = (1 - dist / CONNECTION_DIST) * 0.15;
+              const alpha = (1 - dist / CONNECTION_DIST) * 0.12;
+              const minAlpha = Math.min(particles[i].alpha, particles[j].alpha);
+              const finalAlpha = alpha * (minAlpha / 0.5);
               const isGold = particles[i].isData || particles[j].isData;
 
               ctx.beginPath();
               ctx.moveTo(particles[i].x, particles[i].y);
               ctx.lineTo(particles[j].x, particles[j].y);
               ctx.strokeStyle = isGold
-                ? `rgba(201, 169, 98, ${alpha * 2})`
-                : `rgba(210, 206, 198, ${alpha})`;
-              ctx.lineWidth = isGold ? 0.8 : 0.5;
-              ctx.stroke();
-            }
-          }
-        }
-
-        // Mouse connections — connect to nearby particles
-        const mdx = mouse.x, mdy = mouse.y;
-        if (mdx > 0 && mdy > 0) {
-          for (let i = 0; i < particles.length; i++) {
-            const dx = particles[i].x - mdx;
-            const dy = particles[i].y - mdy;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < MOUSE_RADIUS * 0.7) {
-              const alpha = (1 - dist / (MOUSE_RADIUS * 0.7)) * 0.3;
-              ctx.beginPath();
-              ctx.moveTo(particles[i].x, particles[i].y);
-              ctx.lineTo(mdx, mdy);
-              ctx.strokeStyle = `rgba(201, 169, 98, ${alpha})`;
-              ctx.lineWidth = 0.5;
+                ? `rgba(201, 169, 98, ${finalAlpha * 2.2})`
+                : `rgba(210, 206, 198, ${finalAlpha})`;
+              ctx.lineWidth = isGold ? 0.7 : 0.4;
               ctx.stroke();
             }
           }
         }
       }
 
-      // Occasional "data burst" — a fast-moving bright particle
+      // Data bursts
       let burstTimer = 0;
       function maybeSpawnBurst(t) {
-        if (t - burstTimer > 2000 + Math.random() * 3000) {
+        if (t - burstTimer > 1800 + Math.random() * 2500) {
           burstTimer = t;
-          // Spawn a cluster of 3-5 data particles
-          const count = 3 + Math.floor(Math.random() * 3);
+          const count = 3 + Math.floor(Math.random() * 4);
           const startX = Math.random() * W;
           for (let b = 0; b < count; b++) {
             const p = new Particle();
             p.isData = true;
-            p.vx = (Math.random() - 0.5) * 3;
-            p.vy = Math.random() * 2 + 0.5;
+            p.vx = (Math.random() - 0.5) * 2.5;
+            p.vy = Math.random() * 1.5 + 0.5;
             p.radius = 2.5 + Math.random();
             p.baseAlpha = 0.9;
-            p.x = startX + (Math.random() - 0.5) * 60;
+            p.alpha = 0.9;
+            p.x = startX + (Math.random() - 0.5) * 80;
             p.y = -10 - Math.random() * 30;
             particles.push(p);
           }
-          // Keep count reasonable
-          while (particles.length > PARTICLE_COUNT + 20) {
+          while (particles.length > PARTICLE_COUNT + 25) {
             particles.splice(PARTICLE_COUNT, 1);
           }
         }
       }
 
+      // Get division panel positions (in page coordinates)
+      function getClearZones() {
+        const zones = [];
+        divisionRows.forEach(row => {
+          const rect = row.getBoundingClientRect();
+          zones.push({
+            top: rect.top + scrollY,
+            bottom: rect.bottom + scrollY,
+            left: rect.left,
+            right: rect.right
+          });
+        });
+        return zones;
+      }
+
+      let clearZones = [];
+      let zoneTimer = 0;
+
       function animate(t) {
         ctx.clearRect(0, 0, W, H);
 
-        // Background gradient fade at top and bottom
-        const grad = ctx.createLinearGradient(0, 0, 0, H);
-        grad.addColorStop(0, 'rgba(7, 15, 28, 0.9)');
-        grad.addColorStop(0.15, 'rgba(7, 15, 28, 0)');
-        grad.addColorStop(0.85, 'rgba(7, 15, 28, 0)');
-        grad.addColorStop(1, 'rgba(7, 15, 28, 0.9)');
+        // Update clear zones every ~100ms
+        if (t - zoneTimer > 100) {
+          clearZones = getClearZones();
+          zoneTimer = t;
+        }
 
-        particles.forEach(p => p.update(t));
+        particles.forEach(p => p.update(t, clearZones));
         drawConnections();
         particles.forEach(p => p.draw());
         maybeSpawnBurst(t);
 
-        // Apply fade at edges
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, W, H);
-
         raf = requestAnimationFrame(animate);
       }
 
-      // Throttled mouse tracking
-      let mouseThrottle = false;
-      const section = document.getElementById('networkSection');
-      section.addEventListener('mousemove', e => {
-        if (mouseThrottle) return;
-        mouseThrottle = true;
-        requestAnimationFrame(() => {
-          const rect = section.getBoundingClientRect();
-          mouse.x = e.clientX - rect.left;
-          mouse.y = e.clientY - rect.top;
-          mouseThrottle = false;
-        });
-      });
+      window.addEventListener('scroll', () => {
+        scrollY = window.scrollY;
+      }, { passive: true });
 
-      section.addEventListener('mouseleave', () => {
-        mouse.x = -1000;
-        mouse.y = -1000;
-      });
-
-      window.addEventListener('resize', () => {
-        resize();
-      });
-
-      // Only animate when visible
-      const canvasObs = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            if (!raf) raf = requestAnimationFrame(animate);
-          } else {
-            if (raf) { cancelAnimationFrame(raf); raf = null; }
-          }
-        });
-      }, { threshold: 0.05 });
+      window.addEventListener('resize', resize);
 
       init();
-      canvasObs.observe(section);
+      raf = requestAnimationFrame(animate);
     })();
   </script>
 
