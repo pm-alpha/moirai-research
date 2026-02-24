@@ -61,12 +61,21 @@
       letter-spacing: 0.06em;
     }
 
-    /* ── Full-page canvas ── */
-    #networkCanvas {
+    /* ── Starfield (behind everything) ── */
+    #starsCanvas {
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
       z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Particle network (above stars) ── */
+    #networkCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
       pointer-events: none;
     }
 
@@ -248,6 +257,7 @@
 </head>
 <body>
 
+  <canvas id="starsCanvas"></canvas>
   <canvas id="networkCanvas"></canvas>
 
   <nav>
@@ -373,6 +383,168 @@
 
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
+
+    // ══════════════════════════════════════════
+    // ── TWINKLING STARS + SHOOTING STARS ──
+    // ══════════════════════════════════════════
+    (function() {
+      const canvas = document.getElementById('starsCanvas');
+      const ctx = canvas.getContext('2d');
+      let W, H;
+
+      const STAR_COUNT = 250;
+      const stars = [];
+      const shootingStars = [];
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+
+      class Star {
+        constructor() {
+          this.x = Math.random() * 3000;   // wider than viewport for scroll parallax
+          this.y = Math.random() * 3000;
+          this.size = Math.random() * 1.8 + 0.3;
+          this.twinkleSpeed = 0.5 + Math.random() * 2;
+          this.twinkleOffset = Math.random() * Math.PI * 2;
+          this.baseAlpha = 0.3 + Math.random() * 0.5;
+          // Some stars are slightly warm/gold
+          this.hue = Math.random() < 0.15 ? 'gold' : 'white';
+        }
+
+        draw(t, scrollY) {
+          // Parallax: stars shift slightly with scroll
+          const px = ((this.x - scrollY * 0.02) % W + W) % W;
+          const py = ((this.y - scrollY * 0.05) % H + H) % H;
+
+          const twinkle = Math.sin(t * 0.001 * this.twinkleSpeed + this.twinkleOffset);
+          const alpha = this.baseAlpha + twinkle * 0.25;
+
+          if (alpha < 0.05) return;
+
+          ctx.beginPath();
+          ctx.arc(px, py, this.size, 0, Math.PI * 2);
+          if (this.hue === 'gold') {
+            ctx.fillStyle = `rgba(201, 169, 98, ${alpha})`;
+          } else {
+            ctx.fillStyle = `rgba(220, 225, 235, ${alpha})`;
+          }
+          ctx.fill();
+
+          // Subtle glow on brighter stars
+          if (this.size > 1.2 && alpha > 0.5) {
+            ctx.beginPath();
+            ctx.arc(px, py, this.size * 3, 0, Math.PI * 2);
+            ctx.fillStyle = this.hue === 'gold'
+              ? `rgba(201, 169, 98, ${alpha * 0.06})`
+              : `rgba(200, 210, 230, ${alpha * 0.05})`;
+            ctx.fill();
+          }
+        }
+      }
+
+      class ShootingStar {
+        constructor() {
+          this.reset();
+        }
+
+        reset() {
+          this.x = Math.random() * W * 1.2;
+          this.y = Math.random() * H * 0.5;
+          this.len = 60 + Math.random() * 100;
+          this.speed = 8 + Math.random() * 8;
+          this.angle = Math.PI * 0.15 + Math.random() * 0.2; // slight downward angle
+          this.alpha = 0;
+          this.fadeIn = true;
+          this.life = 0;
+          this.maxLife = 40 + Math.random() * 30;
+        }
+
+        update() {
+          this.x += Math.cos(this.angle) * this.speed;
+          this.y += Math.sin(this.angle) * this.speed;
+          this.life++;
+
+          if (this.fadeIn && this.life < 8) {
+            this.alpha = this.life / 8;
+          } else if (this.life > this.maxLife - 12) {
+            this.alpha = (this.maxLife - this.life) / 12;
+          } else {
+            this.alpha = 1;
+          }
+
+          return this.life < this.maxLife;
+        }
+
+        draw() {
+          if (this.alpha < 0.01) return;
+          const tailX = this.x - Math.cos(this.angle) * this.len;
+          const tailY = this.y - Math.sin(this.angle) * this.len;
+
+          const grad = ctx.createLinearGradient(this.x, this.y, tailX, tailY);
+          grad.addColorStop(0, `rgba(230, 225, 210, ${this.alpha * 0.9})`);
+          grad.addColorStop(0.3, `rgba(201, 169, 98, ${this.alpha * 0.4})`);
+          grad.addColorStop(1, `rgba(201, 169, 98, 0)`);
+
+          ctx.beginPath();
+          ctx.moveTo(this.x, this.y);
+          ctx.lineTo(tailX, tailY);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          // Bright head
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 250, 240, ${this.alpha * 0.8})`;
+          ctx.fill();
+        }
+      }
+
+      function init() {
+        resize();
+        for (let i = 0; i < STAR_COUNT; i++) {
+          stars.push(new Star());
+        }
+      }
+
+      let nextShoot = 3000 + Math.random() * 5000;
+      let lastShoot = 0;
+      let scrollY = 0;
+
+      function animate(t) {
+        ctx.clearRect(0, 0, W, H);
+
+        // Draw twinkling stars
+        stars.forEach(s => s.draw(t, scrollY));
+
+        // Shooting stars — spawn randomly
+        if (t - lastShoot > nextShoot) {
+          shootingStars.push(new ShootingStar());
+          lastShoot = t;
+          nextShoot = 4000 + Math.random() * 8000; // every 4-12 seconds
+        }
+
+        // Update and draw shooting stars
+        for (let i = shootingStars.length - 1; i >= 0; i--) {
+          const alive = shootingStars[i].update();
+          if (alive) {
+            shootingStars[i].draw();
+          } else {
+            shootingStars.splice(i, 1);
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
+      window.addEventListener('resize', resize);
+
+      init();
+      requestAnimationFrame(animate);
+    })();
 
     // ══════════════════════════════════════════
     // ── FULL-PAGE PARTICLE NETWORK ──
