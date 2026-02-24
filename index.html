@@ -373,17 +373,23 @@
 
     // ══════════════════════════════════════════
     // ── FULL-PAGE PARTICLE NETWORK ──
-    // Covers hero + flows into divisions
-    // Scroll-reactive: particles part for division panels
+    // Scroll-reactive: particles dramatically part
+    // for panels, then drift back when panels leave
     // ══════════════════════════════════════════
     (function() {
       const canvas = document.getElementById('networkCanvas');
       const ctx = canvas.getContext('2d');
       let W, H, particles, raf;
       let scrollY = 0;
+      let prevScrollY = 0;
+      let scrollVelocity = 0;
 
       const PARTICLE_COUNT = 400;
       const CONNECTION_DIST = 150;
+      const REPEL_MARGIN = 100;       // how far from panel edge repulsion starts
+      const REPEL_STRENGTH = 6;       // max repulsion force
+      const RETURN_STRENGTH = 0.015;  // how fast particles drift home
+      const SCROLL_PUSH = 0.4;        // how much scroll velocity pushes particles
 
       function resize() {
         W = canvas.width = window.innerWidth;
@@ -391,83 +397,161 @@
       }
 
       class Particle {
-        constructor() { this.reset(true); }
+        constructor() { this.init(true); }
 
-        reset(initial) {
-          this.x = Math.random() * W;
-          this.y = initial ? Math.random() * H : -10;
-          this.baseX = this.x;
-          this.baseY = this.y;
-          this.vx = (Math.random() - 0.5) * 0.35;
-          this.vy = (Math.random() - 0.5) * 0.2 + 0.12;
+        init(scatter) {
+          this.homeX = Math.random() * W;
+          this.homeY = Math.random() * H;
+          this.x = scatter ? this.homeX : Math.random() * W;
+          this.y = scatter ? this.homeY : -10;
+          this.vx = 0;
+          this.vy = 0;
+          this.driftVX = (Math.random() - 0.5) * 0.3;
+          this.driftVY = (Math.random() - 0.5) * 0.15 + 0.1;
           this.radius = Math.random() * 2.5 + 1;
           this.isData = Math.random() < 0.2;
           if (this.isData) {
-            this.vy = Math.random() * 0.6 + 0.3;
-            this.vx = (Math.random() - 0.5) * 1;
+            this.driftVY = Math.random() * 0.5 + 0.2;
+            this.driftVX = (Math.random() - 0.5) * 0.8;
             this.radius = Math.random() * 2 + 0.8;
           }
           this.baseAlpha = this.isData ? 0.8 : 0.3 + Math.random() * 0.2;
           this.alpha = this.baseAlpha;
           this.pulseOffset = Math.random() * Math.PI * 2;
-          // Repulsion state
-          this.repelX = 0;
-          this.repelY = 0;
+          this.displaced = 0; // 0 = home, 1 = fully displaced
         }
 
-        update(t, clearZones) {
-          this.x += this.vx;
-          this.y += this.vy;
+        update(t, zones) {
+          // Natural drift
+          this.vx += this.driftVX * 0.01;
+          this.vy += this.driftVY * 0.01;
+
+          // Scroll velocity pushes all particles
+          this.vy += scrollVelocity * SCROLL_PUSH * 0.01;
 
           // Pulse
           this.alpha = this.baseAlpha + Math.sin(t * 0.002 + this.pulseOffset) * 0.08;
 
-          // Repulsion from division panels (scroll-driven)
-          this.repelX = 0;
-          this.repelY = 0;
+          // Panel repulsion — only for panels visible in viewport
+          let totalRepelX = 0;
+          let totalRepelY = 0;
+          let maxDisplace = 0;
 
-          for (const zone of clearZones) {
-            // Zone is in page coordinates, particle is in viewport coordinates
-            const zoneTop = zone.top - scrollY;
-            const zoneBottom = zone.bottom - scrollY;
-            const zoneLeft = zone.left;
-            const zoneRight = zone.right;
-            const margin = 60;
+          for (const zone of zones) {
+            const zt = zone.top - scrollY;
+            const zb = zone.bottom - scrollY;
+            const zl = zone.left;
+            const zr = zone.right;
 
-            // Check if particle is near or inside zone
-            const nearX = this.x > zoneLeft - margin && this.x < zoneRight + margin;
-            const nearY = this.y > zoneTop - margin && this.y < zoneBottom + margin;
+            // Skip zones completely off-screen
+            if (zb < -REPEL_MARGIN || zt > H + REPEL_MARGIN) continue;
 
-            if (nearX && nearY) {
-              // Calculate repulsion from zone center
-              const zoneCX = (zoneLeft + zoneRight) / 2;
-              const zoneCY = (zoneTop + zoneBottom) / 2;
-              const dx = this.x - zoneCX;
-              const dy = this.y - zoneCY;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              const zoneR = Math.max(zoneRight - zoneLeft, zoneBottom - zoneTop) / 2 + margin;
+            // How visible is this zone? (0 = off screen, 1 = fully on screen)
+            const visibility = Math.max(0, Math.min(
+              (zb + REPEL_MARGIN) / (H * 0.3),
+              (H + REPEL_MARGIN - zt) / (H * 0.3),
+              1
+            ));
 
-              if (dist < zoneR && dist > 0) {
-                const force = (1 - dist / zoneR) * 2.5;
-                this.repelX += (dx / dist) * force;
-                this.repelY += (dy / dist) * force;
-                // Dim particles near panels
-                this.alpha *= 0.5 + (dist / zoneR) * 0.5;
+            if (visibility <= 0) continue;
+
+            // Expanded zone with margin
+            const exLeft = zl - REPEL_MARGIN;
+            const exRight = zr + REPEL_MARGIN;
+            const exTop = zt - REPEL_MARGIN;
+            const exBottom = zb + REPEL_MARGIN;
+
+            // Is particle inside expanded zone?
+            if (this.x > exLeft && this.x < exRight && this.y > exTop && this.y < exBottom) {
+              // Distance to nearest edge of the actual panel
+              const dLeft = this.x - zl;
+              const dRight = zr - this.x;
+              const dTop = this.y - zt;
+              const dBottom = zb - this.y;
+
+              // Are we inside the actual panel?
+              const insideX = this.x > zl && this.x < zr;
+              const insideY = this.y > zt && this.y < zb;
+
+              let fx = 0, fy = 0;
+
+              if (insideX && insideY) {
+                // Inside panel — strong push toward nearest edge
+                const minDist = Math.min(dLeft, dRight, dTop, dBottom);
+                if (minDist === dLeft) fx = -REPEL_STRENGTH * 1.5;
+                else if (minDist === dRight) fx = REPEL_STRENGTH * 1.5;
+                else if (minDist === dTop) fy = -REPEL_STRENGTH * 1.5;
+                else fy = REPEL_STRENGTH * 1.5;
+                maxDisplace = 1;
+              } else {
+                // In margin zone — proportional push
+                const cx = (zl + zr) / 2;
+                const cy = (zt + zb) / 2;
+                const dx = this.x - cx;
+                const dy = this.y - cy;
+                const halfW = (zr - zl) / 2 + REPEL_MARGIN;
+                const halfH = (zb - zt) / 2 + REPEL_MARGIN;
+
+                // Normalized distance (0 = at panel edge, 1 = at margin edge)
+                const nx = Math.abs(dx) / halfW;
+                const ny = Math.abs(dy) / halfH;
+                const proximity = 1 - Math.max(nx, ny);
+
+                if (proximity > 0) {
+                  const force = proximity * REPEL_STRENGTH * visibility;
+                  const angle = Math.atan2(dy, dx);
+                  fx = Math.cos(angle) * force;
+                  fy = Math.sin(angle) * force;
+                  maxDisplace = Math.max(maxDisplace, proximity);
+                }
               }
+
+              totalRepelX += fx * visibility;
+              totalRepelY += fy * visibility;
             }
           }
 
-          this.x += this.repelX;
-          this.y += this.repelY;
+          // Apply repulsion
+          this.vx += totalRepelX * 0.15;
+          this.vy += totalRepelY * 0.15;
+
+          // Track displacement for alpha
+          this.displaced += (maxDisplace - this.displaced) * 0.1;
+          this.alpha *= (1 - this.displaced * 0.6);
+
+          // Return home gently when not displaced
+          if (maxDisplace < 0.01) {
+            // Drift homeX/homeY slowly (so they don't freeze)
+            this.homeX += this.driftVX;
+            this.homeY += this.driftVY;
+            // Wrap home position
+            if (this.homeX < 0) this.homeX = W;
+            if (this.homeX > W) this.homeX = 0;
+            if (this.homeY < 0) this.homeY = H;
+            if (this.homeY > H) this.homeY = 0;
+
+            // Gentle pull back to home area
+            this.vx += (this.homeX - this.x) * RETURN_STRENGTH;
+            this.vy += (this.homeY - this.y) * RETURN_STRENGTH;
+          }
+
+          // Damping
+          this.vx *= 0.92;
+          this.vy *= 0.92;
+
+          // Apply velocity
+          this.x += this.vx;
+          this.y += this.vy;
 
           // Wrap
-          if (this.x < -30) this.x = W + 30;
-          if (this.x > W + 30) this.x = -30;
-          if (this.y > H + 30) { this.x = Math.random() * W; this.y = -30; }
-          if (this.y < -50) this.y = H + 30;
+          if (this.x < -40) this.x = W + 40;
+          if (this.x > W + 40) this.x = -40;
+          if (this.y > H + 40) { this.homeY = -20; this.y = -40; }
+          if (this.y < -60) { this.homeY = H + 20; this.y = H + 40; }
         }
 
         draw() {
+          if (this.alpha < 0.01) return;
           ctx.beginPath();
           ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
           ctx.fillStyle = this.isData
@@ -487,7 +571,9 @@
 
       function drawConnections() {
         for (let i = 0; i < particles.length; i++) {
+          if (particles[i].alpha < 0.05) continue;
           for (let j = i + 1; j < particles.length; j++) {
+            if (particles[j].alpha < 0.05) continue;
             const dx = particles[i].x - particles[j].x;
             const dy = particles[i].y - particles[j].y;
             const dist = Math.sqrt(dx * dx + dy * dy);
@@ -496,6 +582,7 @@
               const alpha = (1 - dist / CONNECTION_DIST) * 0.12;
               const minAlpha = Math.min(particles[i].alpha, particles[j].alpha);
               const finalAlpha = alpha * (minAlpha / 0.5);
+              if (finalAlpha < 0.005) continue;
               const isGold = particles[i].isData || particles[j].isData;
 
               ctx.beginPath();
@@ -521,13 +608,15 @@
           for (let b = 0; b < count; b++) {
             const p = new Particle();
             p.isData = true;
-            p.vx = (Math.random() - 0.5) * 2.5;
-            p.vy = Math.random() * 1.5 + 0.5;
+            p.driftVX = (Math.random() - 0.5) * 2;
+            p.driftVY = Math.random() * 1 + 0.4;
             p.radius = 2.5 + Math.random();
             p.baseAlpha = 0.9;
             p.alpha = 0.9;
             p.x = startX + (Math.random() - 0.5) * 80;
             p.y = -10 - Math.random() * 30;
+            p.homeX = p.x;
+            p.homeY = H * 0.5;
             particles.push(p);
           }
           while (particles.length > PARTICLE_COUNT + 25) {
@@ -536,7 +625,10 @@
         }
       }
 
-      // Get division panel positions (in page coordinates)
+      // Cache division positions (page coordinates)
+      let clearZones = [];
+      let zoneTimer = 0;
+
       function getClearZones() {
         const zones = [];
         divisionRows.forEach(row => {
@@ -551,14 +643,15 @@
         return zones;
       }
 
-      let clearZones = [];
-      let zoneTimer = 0;
-
       function animate(t) {
         ctx.clearRect(0, 0, W, H);
 
-        // Update clear zones every ~100ms
-        if (t - zoneTimer > 100) {
+        // Update scroll velocity
+        scrollVelocity += (((scrollY - prevScrollY) * 0.5) - scrollVelocity) * 0.2;
+        prevScrollY = scrollY;
+
+        // Refresh zones periodically
+        if (t - zoneTimer > 80) {
           clearZones = getClearZones();
           zoneTimer = t;
         }
@@ -571,10 +664,7 @@
         raf = requestAnimationFrame(animate);
       }
 
-      window.addEventListener('scroll', () => {
-        scrollY = window.scrollY;
-      }, { passive: true });
-
+      window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
       window.addEventListener('resize', resize);
 
       init();
