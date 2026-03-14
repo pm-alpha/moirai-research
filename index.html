@@ -202,6 +202,19 @@
 
     .footer-left { font-size: 0.85rem; color: var(--text-label); }
 
+    .footer-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .footer-label {
+      font-size: 0.72rem;
+      color: rgba(145, 141, 137, 0.72);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
     .footer-right a {
       font-size: 0.85rem;
       color: var(--text-label);
@@ -336,10 +349,20 @@
 
   <footer>
     <div class="footer-left">&copy; 2026 Moirai Research</div>
-    <div class="footer-right"><a href="mailto:contact@moirairesearch.com">contact@moirairesearch.com</a></div>
+    <div class="footer-right">
+      <span class="footer-label">Contact</span>
+      <a id="contactEmailLink" href="#" aria-label="Email Moirai Research"></a>
+    </div>
   </footer>
 
   <script>
+    const CONTACT_EMAIL = ['contact', 'moirairesearch.com'].join('@');
+    const contactEmailLink = document.getElementById('contactEmailLink');
+    if (contactEmailLink) {
+      contactEmailLink.href = `mailto:${CONTACT_EMAIL}`;
+      contactEmailLink.textContent = CONTACT_EMAIL;
+    }
+
     // ── Hero word stagger ──
     function animateWords(el, text, baseDelay) {
       el.innerHTML = text.split(' ').map((w, i) =>
