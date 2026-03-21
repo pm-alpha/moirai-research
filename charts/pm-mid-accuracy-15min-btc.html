@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM Mid Price Accuracy — 15-Min BTC Markets (3-Day) V2</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #c9d1d9; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; padding: 20px; }
+  h1 { color: #58a6ff; font-size: 20px; margin-bottom: 4px; }
+  .subtitle { color: #8b949e; font-size: 12px; margin-bottom: 20px; }
+  .grid { display: grid; gap: 16px; margin-bottom: 20px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  @media (max-width: 900px) { .grid-2, .grid-4 { grid-template-columns: 1fr; } }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; }
+  .card h2 { color: #58a6ff; font-size: 14px; margin-bottom: 12px; border-bottom: 1px solid #21262d; padding-bottom: 8px; }
+  .card h3 { color: #8b949e; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .metric { margin-bottom: 10px; }
+  .metric .label { color: #8b949e; font-size: 11px; }
+  .metric .value { font-size: 22px; font-weight: bold; }
+  .metric .value.bad { color: #f85149; }
+  .metric .value.ok { color: #d29922; }
+  .metric .value.good { color: #3fb950; }
+  .metric .value.neutral { color: #c9d1d9; }
+  .chart-container { width: 100%; height: 360px; }
+  .chart-container.tall { height: 420px; }
+  .section-title { color: #58a6ff; font-size: 16px; margin: 24px 0 12px 0; border-bottom: 1px solid #21262d; padding-bottom: 6px; }
+  .insight { background: #1c2128; border-left: 3px solid #d29922; padding: 12px 16px; margin: 12px 0; border-radius: 0 6px 6px 0; font-size: 12px; line-height: 1.5; }
+  .insight strong { color: #d29922; }
+  .insight.bad { border-left-color: #f85149; }
+  .insight.bad strong { color: #f85149; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
+  .tag.red { background: rgba(248,81,73,0.15); color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
+  .tag.yellow { background: rgba(210,153,34,0.15); color: #d29922; border: 1px solid rgba(210,153,34,0.3); }
+  .footer { color: #484f58; font-size: 11px; margin-top: 30px; text-align: center; border-top: 1px solid #21262d; padding-top: 12px; }
+</style>
+</head>
+<body>
+
+<h1>PM Mid Price Accuracy as a Probability Model — 15-Min BTC</h1>
+<div class="subtitle">V2 (bug-fixed: token_up only + market-window filtered) · 288 Markets · 15,549 Obs · 2026-03-18 to 2026-03-21</div>
+
+<div class="grid grid-4">
+  <div class="card">
+    <h3>All Tau</h3>
+    <div class="metric"><div class="label">Brier Score</div><div class="value bad">0.2969</div></div>
+    <div class="metric"><div class="label">BSS vs Base Rate</div><div class="value bad">-18.8%</div></div>
+    <div style="margin-top:6px"><span class="tag red">STRONG NEGATIVE SKILL</span></div>
+  </div>
+  <div class="card">
+    <h3>Tau 0.3–0.7</h3>
+    <div class="metric"><div class="label">Brier Score</div><div class="value bad">0.3075</div></div>
+    <div class="metric"><div class="label">BSS vs Base Rate</div><div class="value bad">-23.0%</div></div>
+    <div style="margin-top:6px"><span class="tag red">MUCH WORSE</span></div>
+  </div>
+  <div class="card">
+    <h3>Dataset</h3>
+    <div class="metric"><div class="label">Markets</div><div class="value neutral">288</div></div>
+    <div class="metric"><div class="label">Observations</div><div class="value neutral">15,549</div></div>
+  </div>
+  <div class="card">
+    <h3>Base Rate</h3>
+    <div class="metric"><div class="label">YES outcome rate</div><div class="value neutral">50.7%</div></div>
+    <div class="metric"><div class="label">Brier (naive)</div><div class="value neutral">0.2500</div></div>
+    <div style="margin-top:6px"><span class="tag yellow">THE BAR TO BEAT</span></div>
+  </div>
+</div>
+
+<div class="insight bad">
+  <strong>Confirmed after bug-fix:</strong> The 15-min PM mid has genuinely strong negative skill (−18.8% BSS).
+  This is actually <em>worse</em> than V1 (−4.6%) because V1's pre-market 50/50 books were diluting the bad numbers.
+  The mid is massively overconfident: when it says 4% → reality is 45%, when it says 96% → reality is 63%.
+  Res/Rel = 0.09 — the mid barely separates outcomes and what separation exists is swamped by calibration error.
+</div>
+
+<div class="insight">
+  <strong>5-Min vs 15-Min:</strong> The 5-min mid has +1.5% BSS (slight positive skill).
+  The 15-min mid has −18.8% BSS. The overconfidence problem scales dramatically with duration —
+  15 minutes gives the mid 3× more time to drift to extremes that don't reflect true probabilities.
+  <a href="pm-mid-accuracy-5min-btc.html" style="color:#58a6ff">→ See 5-min dashboard</a>
+</div>
+
+<div class="section-title">Calibration: Predicted vs Actual</div>
+<div class="grid grid-2">
+  <div class="card"><h2>All Tau — Reliability Diagram</h2><div id="cal-all" class="chart-container"></div></div>
+  <div class="card"><h2>Tau 0.3–0.7 — Reliability Diagram</h2><div id="cal-filt" class="chart-container"></div></div>
+</div>
+
+<div class="section-title">Brier Score by Time-to-Expiry (Tau)</div>
+<div class="grid grid-2">
+  <div class="card"><h2>Brier by Tau (15-min vs 5-min)</h2><div id="brier-tau" class="chart-container"></div></div>
+  <div class="card"><h2>Observation Count by Tau</h2><div id="obs-tau" class="chart-container"></div></div>
+</div>
+
+<div class="insight">
+  <strong>Tau Pattern:</strong> Brier monotonically degrades from tau 1.0→0.0. At market open (tau 0.9-1.0), mid ≈ 0.50, Brier ≈ 0.247.
+  Near expiry (tau 0.0-0.1), Brier = 0.331 — 33% worse than naive. Unlike the 5-min market (where the mid converges correctly),
+  the 15-min mid gets progressively MORE wrong as the market evolves.
+</div>
+
+<div class="section-title">Murphy Decomposition</div>
+<div class="grid grid-2">
+  <div class="card"><h2>All Tau — BS = Unc − Res + Rel</h2><div id="murphy-all" class="chart-container"></div></div>
+  <div class="card"><h2>Tau 0.3–0.7 — BS = Unc − Res + Rel</h2><div id="murphy-filt" class="chart-container"></div></div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>All Tau — Murphy</h3>
+    <div class="metric"><div class="label">Uncertainty</div><div class="value neutral" style="font-size:16px">0.2500</div></div>
+    <div class="metric"><div class="label">Resolution</div><div class="value bad" style="font-size:16px">0.0043</div></div>
+    <div class="metric"><div class="label">Reliability</div><div class="value bad" style="font-size:16px">0.0506</div></div>
+    <div class="metric"><div class="label">Res/Rel Ratio</div><div class="value bad" style="font-size:16px">0.09</div></div>
+    <div style="margin-top:6px"><span class="tag red">CALIBRATION LIMITED</span></div>
+  </div>
+  <div class="card">
+    <h3>Tau 0.3–0.7 — Murphy</h3>
+    <div class="metric"><div class="label">Uncertainty</div><div class="value neutral" style="font-size:16px">0.2499</div></div>
+    <div class="metric"><div class="label">Resolution</div><div class="value bad" style="font-size:16px">0.0042</div></div>
+    <div class="metric"><div class="label">Reliability</div><div class="value bad" style="font-size:16px">0.0611</div></div>
+    <div class="metric"><div class="label">Res/Rel Ratio</div><div class="value bad" style="font-size:16px">0.07</div></div>
+    <div style="margin-top:6px"><span class="tag red">CALIBRATION LIMITED</span> <span style="color:#8b949e;font-size:11px;margin-left:6px">15× more reliability error than resolution</span></div>
+  </div>
+</div>
+
+<div class="section-title">Calibration Error by Prediction Bin (Tau 0.3–0.7)</div>
+<div class="card"><h2>Predicted − Actual</h2><div id="cal-error" class="chart-container tall"></div></div>
+
+<div class="section-title">5-Min vs 15-Min Head-to-Head</div>
+<div class="card"><h2>BSS and Res/Rel Across Durations (Tau 0.3–0.7)</h2><div id="compare" class="chart-container"></div></div>
+
+<div class="footer">
+  PM Alpha · pm-mid-accuracy V2 · Data: ClickHouse Helsinki · 288 fifteen-minute BTC markets · 2026-03-18 to 2026-03-21
+  · <a href="pm-mid-accuracy-5min-btc.html" style="color:#58a6ff">See 5-min dashboard →</a>
+</div>
+
+<script>
+const T = { paper_bgcolor:'#161b22', plot_bgcolor:'#0d1117', font:{color:'#c9d1d9',family:"'SF Mono',monospace",size:11}, margin:{l:55,r:20,t:10,b:50}, xaxis:{gridcolor:'#21262d',linecolor:'#30363d'}, yaxis:{gridcolor:'#21262d',linecolor:'#30363d'}, legend:{orientation:'h',y:1.12,x:0,font:{size:11},bgcolor:'rgba(0,0,0,0)'}, hovermode:'x unified' };
+const C = { displayModeBar:true, modeBarButtonsToRemove:['lasso2d','select2d','toImage'], displaylogo:false, responsive:true, scrollZoom:true };
+const bins = ['0-10%','10-20%','20-30%','30-40%','40-50%','50-60%','60-70%','70-80%','80-90%','90-100%'];
+
+const calAll = {
+  p:[0.0381,0.1504,0.2496,0.3512,0.4521,0.5452,0.6494,0.7491,0.8504,0.9606],
+  o:[0.4480,0.4416,0.4457,0.4472,0.4666,0.5209,0.5283,0.5760,0.5908,0.6336],
+  n:[1942,976,1288,1713,2128,2148,1450,1191,931,1782],
+};
+const calF = {
+  p:[0.0462,0.1490,0.2461,0.3488,0.4511,0.5470,0.6517,0.7495,0.8513,0.9502],
+  o:[0.4659,0.4704,0.4854,0.4476,0.4237,0.5014,0.5193,0.5563,0.5813,0.6381],
+  n:[880,540,618,677,668,696,597,622,523,793],
+};
+
+function plotCal(id, d) {
+  const mx = Math.max(...d.n); const sz = d.n.map(c => 8+30*(c/mx));
+  Plotly.react(id, [
+    {x:[0,1],y:[0,1],mode:'lines',line:{color:'#30363d',width:1,dash:'dash'},showlegend:false,hoverinfo:'skip'},
+    {x:d.p,y:d.o,mode:'markers+lines',marker:{size:sz,color:'#58a6ff',opacity:0.8},line:{color:'#58a6ff',width:2},
+     text:d.n.map((c,i)=>`Pred:${(d.p[i]*100).toFixed(1)}%<br>Actual:${(d.o[i]*100).toFixed(1)}%<br>n=${c}`),hoverinfo:'text',name:'PM Mid'},
+  ], {...T,xaxis:{...T.xaxis,title:{text:'Predicted',font:{size:11,color:'#8b949e'}},range:[0,1],dtick:0.1},yaxis:{...T.yaxis,title:{text:'Observed',font:{size:11,color:'#8b949e'}},range:[0,1],dtick:0.1}}, C);
+}
+plotCal('cal-all',calAll); plotCal('cal-filt',calF);
+
+const tL = ['τ0.0','τ0.1','τ0.2','τ0.3','τ0.4','τ0.5','τ0.6','τ0.7','τ0.8','τ0.9'];
+const b15 = [0.3314,0.3288,0.3261,0.3150,0.3226,0.3038,0.2895,0.2772,0.2564,0.2472];
+const b5 =  [0.2345,0.2401,0.2374,0.2411,0.2502,0.2509,0.2470,0.2456,0.2491,0.2489];
+const br = 0.2500;
+
+Plotly.react('brier-tau', [
+  {x:tL,y:b15,type:'bar',name:'15-min',marker:{color:'#f85149',opacity:0.8},text:b15.map(b=>b.toFixed(3)),textposition:'outside',textfont:{size:9,color:'#c9d1d9'}},
+  {x:tL,y:b5,type:'bar',name:'5-min',marker:{color:'#58a6ff',opacity:0.5}},
+  {x:tL,y:Array(10).fill(br),mode:'lines',line:{color:'#d29922',width:2,dash:'dash'},name:'Base Rate'},
+], {...T,barmode:'group',xaxis:{...T.xaxis,title:{text:'Tau (1=open, 0=expiry)',font:{size:11,color:'#8b949e'}}},yaxis:{...T.yaxis,title:{text:'Brier',font:{size:11,color:'#8b949e'}},range:[0.20,0.36]}}, C);
+
+const oT = [888,1375,1530,1611,1638,1672,1692,1707,1715,1721];
+Plotly.react('obs-tau', [
+  {x:tL,y:oT,type:'bar',marker:{color:oT.map((_,i)=>i>=3&&i<=6?'#58a6ff':'#30363d'),opacity:0.85},text:oT.map(o=>o.toLocaleString()),textposition:'outside',textfont:{size:10,color:'#c9d1d9'}},
+], {...T,xaxis:{...T.xaxis,title:{text:'Tau',font:{size:11,color:'#8b949e'}}},yaxis:{...T.yaxis,title:{text:'Observations',font:{size:11,color:'#8b949e'}}},showlegend:false,annotations:[{x:'τ0.5',y:1672,text:'Even dist ✓',showarrow:false,font:{size:10,color:'#3fb950'},yshift:25}]}, C);
+
+function plotM(id,u,r,l,b) {
+  Plotly.react(id,[{type:'waterfall',orientation:'v',x:['Uncertainty','Resolution (−)','Reliability (+)','Brier'],y:[u,-r,l,0],measure:['absolute','relative','relative','total'],connector:{line:{color:'#30363d',width:1}},decreasing:{marker:{color:'#3fb950'}},increasing:{marker:{color:'#f85149'}},totals:{marker:{color:'#58a6ff'}},textposition:'outside',text:[u.toFixed(4),'−'+r.toFixed(4),'+'+l.toFixed(4),b.toFixed(4)],textfont:{size:11,color:'#c9d1d9'}}],{...T,yaxis:{...T.yaxis,title:{text:'Brier',font:{size:11,color:'#8b949e'}},range:[0,0.35]},showlegend:false},C);
+}
+plotM('murphy-all',0.2500,0.0043,0.0506,0.2969);
+plotM('murphy-filt',0.2499,0.0042,0.0611,0.3075);
+
+const cE = calF.p.map((p,i)=>p-calF.o[i]);
+Plotly.react('cal-error',[
+  {x:bins,y:cE,type:'bar',marker:{color:cE.map(e=>e>0?'#f85149':'#3fb950'),opacity:0.85},text:cE.map(e=>(e>0?'+':'')+(e*100).toFixed(1)+'pp'),textposition:'outside',textfont:{size:10,color:'#c9d1d9'}},
+  {x:bins,y:Array(10).fill(0),mode:'lines',line:{color:'#30363d',width:1},showlegend:false,hoverinfo:'skip'},
+],{...T,margin:{...T.margin,b:60},xaxis:{...T.xaxis,title:{text:'Prediction Bin (τ 0.3–0.7)',font:{size:11,color:'#8b949e'}}},yaxis:{...T.yaxis,title:{text:'Predicted − Observed',font:{size:11,color:'#8b949e'}},range:[-0.50,0.40],dtick:0.1},showlegend:false,annotations:[{x:'90-100%',y:cE[9],text:'Mid says 95%<br>Reality: 64%',showarrow:true,arrowcolor:'#f85149',font:{size:10,color:'#f85149'},ax:-60,ay:-30},{x:'0-10%',y:cE[0],text:'Mid says 5%<br>Reality: 47%',showarrow:true,arrowcolor:'#3fb950',font:{size:10,color:'#3fb950'},ax:60,ay:30}]},C);
+
+Plotly.react('compare',[
+  {x:['5-min','15-min'],y:[0.7,-23.0],type:'bar',name:'BSS (τ 0.3–0.7)',marker:{color:['#3fb950','#f85149'],opacity:0.85},text:['+0.7%','-23.0%'],textposition:'outside',textfont:{size:13,color:'#c9d1d9'},yaxis:'y'},
+  {x:['5-min','15-min'],y:[1.09,0.07],type:'scatter',mode:'markers+text',name:'Res/Rel',marker:{size:20,color:'#d29922',symbol:'diamond'},text:['1.09','0.07'],textposition:'top center',textfont:{size:12,color:'#d29922'},yaxis:'y2'},
+],{...T,xaxis:{...T.xaxis},yaxis:{...T.yaxis,title:{text:'BSS (%)',font:{size:11,color:'#f85149'}},range:[-30,5],side:'left'},yaxis2:{...T.yaxis,title:{text:'Res/Rel',font:{size:11,color:'#d29922'}},range:[0,1.5],overlaying:'y',side:'right'}},C);
+</script>
+</body>
+</html>
